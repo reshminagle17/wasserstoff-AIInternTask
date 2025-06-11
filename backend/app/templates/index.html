@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document Chatbot</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h2>Upload Document</h2>
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Upload</button>
+    <p id="uploadResponse"></p>
+
+    <h2>Ask a Question</h2>
+    <input type="text" id="queryInput" placeholder="Enter your question">
+    <button onclick="askQuery()">Ask</button>
+    <pre id="queryResponse"></pre>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

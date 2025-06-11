@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+tqdm
+pytesseract
+pdf2image
+python-multipart
+Pillow
+numpy
+PyMuPDF
+jinja2
