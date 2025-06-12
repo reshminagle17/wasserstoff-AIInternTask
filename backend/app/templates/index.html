@@ -1,21 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Document Chatbot</title>
-    <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8">
+  <title>Document Research Chatbot</title>
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <h2>Upload Document</h2>
-    <input type="file" id="fileInput">
-    <button onclick="uploadFile()">Upload</button>
-    <p id="uploadResponse"></p>
+  <div class="container">
+    <h1>Document Research Chatbot</h1>
 
-    <h2>Ask a Question</h2>
-    <input type="text" id="queryInput" placeholder="Enter your question">
-    <button onclick="askQuery()">Ask</button>
-    <pre id="queryResponse"></pre>
+    <!-- Upload Section -->
+    <section>
+      <h2>Upload File</h2>
+      <input type="file" id="fileInput">
+      <button onclick="upload()">Upload</button>
+      <p id="upRes"></p>
+    </section>
 
-    <script src="/static/script.js"></script>
+    <!-- Query Section -->
+    <section>
+      <h2>Ask Question</h2>
+      <input type="text" id="qInput" placeholder="Enter your query">
+      <button onclick="ask()">Ask</button>
+    </section>
+
+    <!-- Results -->
+    <section>
+      <h3>Matched Documents:</h3>
+      <div id="docsRes"></div>
+
+      <h3>Identified Theme:</h3>
+      <div id="themeRes"></div>
+    </section>
+  </div>
+
+  <!-- Script -->
+  <!-- Script -->
+<script>
+  async function upload(){
+    let file = document.getElementById("fileInput").files[0];
+    if (!file) {
+      document.getElementById("upRes").innerText = "⚠️ Please select a file first.";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch('/upload/', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+    document.getElementById("upRes").innerText = JSON.stringify(result, null, 2);
+  }
+
+  async function ask(){
+    let query = document.getElementById("qInput").value.trim();
+    if (!query) {
+      document.getElementById("docsRes").innerText = "⚠️ Please enter a query.";
+      document.getElementById("themeRes").innerText = "";
+      return;
+    }
+
+    // Step 1: Call /query/
+    let response = await fetch(`/query/?query=${encodeURIComponent(query)}`);
+    let json = await response.json();
+    document.getElementById("docsRes").innerHTML = '';
+
+    if (json.results && json.results.length > 0) {
+      json.results.forEach(result => {
+        const div = document.createElement("div");
+         div.innerHTML = result.replace(/\n/g, "<br>").replace(/●/g, "•");
+         document.getElementById("docsRes").appendChild(div);
+
+        // 👇 Fix for showing full content if result is object
+        if (typeof result === "string") {
+          div.innerText = result;
+        } else {
+          div.innerText = JSON.stringify(result, null, 2);
+        }
+
+        document.getElementById("docsRes").appendChild(div);
+      });
+
+      // Step 2: Combine results for theme identification
+      const combinedText = json.results.map(r =>
+        typeof r === "string" ? r : JSON.stringify(r)
+      ).join(" ");
+
+      let themeResponse = await fetch('/identify-theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: combinedText })
+      });
+
+      let themeJson = await themeResponse.json();
+
+      //  Fix for handling undefined theme
+      document.getElementById("themeRes").innerText = themeJson.theme
+        ? "Theme: " + themeJson.theme
+        : " Theme could not be identified.";
+    } else {
+      document.getElementById("docsRes").innerText = "No relevant documents found.";
+      document.getElementById("themeRes").innerText = "";
+    }
+  }
+</script>
 </body>
 </html>
+
+
+

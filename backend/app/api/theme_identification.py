@@ -1,21 +1,36 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
+from typing import List
 
 router = APIRouter()
 
-# Function to identify the theme based on the text
-def identify_theme(text: str) -> str:
-    text = text.lower()
-    if "student" in text or "exam" in text:
-        return "Education"
-    elif "invoice" in text or "payment" in text:
-        return "Finance"
-    elif "doctor" in text or "medicine" in text:
-        return "Healthcare"
-    else:
-        return "General"
+class TextInput(BaseModel):
+    text: str
 
-# Route to get theme from text
+# Improved multi-theme identification function
+def identify_themes(text: str) -> List[str]:
+    text = text.lower()
+    themes = []
+
+    education_keywords = ["student", "exam", "university", "school", "assignment","python","code","programming","learning","developer","interview","projects","function","oops","syntax","library"]
+    finance_keywords = ["invoice", "payment", "transaction", "amount", "balance"]
+    healthcare_keywords = ["doctor", "medicine", "hospital", "treatment", "health"]
+
+    if any(word in text for word in education_keywords):
+        themes.append("Education")
+    if any(word in text for word in finance_keywords):
+        themes.append("Finance")
+    if any(word in text for word in healthcare_keywords):
+        themes.append("Healthcare")
+
+    if not themes:
+        themes.append("General")
+
+    return themes
+
+# Updated route
 @router.post("/identify-theme")
-async def get_theme(text: str):
-    theme = identify_theme(text)
-    return {"theme": theme}
+async def get_theme(input: TextInput):
+    themes = identify_themes(input.text)
+    return {"themes": themes}
+

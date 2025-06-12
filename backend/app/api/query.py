@@ -1,22 +1,33 @@
-# backend/app/api/query.py
-
-from fastapi import APIRouter , Query
+from fastapi import APIRouter, Query
 from typing import List
 from backend.app.services.document_service import search_documents
-  # Yeh service ko import kar rahe hain
 
 router = APIRouter()
 
 @router.get("/query/")
-async def query_documents(query: str):
+async def query_documents(query: str = Query(..., min_length=1)):
     try:
-        # Query ke basis pe document search kar rahe hain
+        print(f" Received query: {query}")
+
         results = await search_documents(query)
-        
-        if not results:
-            return {"message": "No relevant documents found."}
-        
-        return {"results": results}
-    
+
+        if not results or results == ["No documents matched your query."]:
+            return {
+                "results": [],
+                "message": " No relevant documents found."
+            }
+
+        return {
+            "results": results,
+            "message": f"Found {len(results)} matching document(s)."
+        }
+
     except Exception as e:
-        return {"error": str(e)}
+        print(f" Error in query_documents: {e}")
+        return {
+            "results": [],
+            "error": str(e),
+            "message": " Failed to process query."
+        }
+
+

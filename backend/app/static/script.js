@@ -9,8 +9,10 @@ async function uploadFile() {
         method: 'POST',
         body: formData
     });
+    console.log(response);
 
     const result = await response.json();
+    console.log(result);
     document.getElementById('uploadResponse').innerText = result.message || JSON.stringify(result);
 }
 
@@ -20,6 +22,6 @@ async function askQuery() {
 
     const response = await fetch(`http://127.0.0.1:8000/query/?query=${encodeURIComponent(query)}`);
     const result = await response.json();
-
+console.log("resolt",result);
     document.getElementById('queryResponse').innerText = JSON.stringify(result, null, 2);
 }
