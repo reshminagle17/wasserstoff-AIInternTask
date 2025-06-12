@@ -1,7 +1,8 @@
 from typing import List, Dict
 import os
 import pdfplumber
-from backend.app.services.ocr_utils import extract_text_from_pdf, extract_text_from_image
+from app.services.ocr_utils import extract_text_from_pdf, extract_text_from_image
+
 
 # Function to extract text from any document (PDF/Image)
 import pdfplumber
