@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from typing import List
-from backend.app.services.document_service import search_documents
+from app.services.document_service import search_documents
 
 router = APIRouter()
 
