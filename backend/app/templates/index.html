@@ -35,81 +35,80 @@
   </div>
 
   <!-- Script -->
-  <!-- Script -->
-<script>
-  async function upload(){
-    let file = document.getElementById("fileInput").files[0];
-    if (!file) {
-      document.getElementById("upRes").innerText = "⚠️ Please select a file first.";
-      return;
-    }
+  <script>
+    async function upload(){
+      let file = document.getElementById("fileInput").files[0];
+      if (!file) {
+        document.getElementById("upRes").innerText = "⚠️ Please select a file first.";
+        return;
+      }
 
-    const formData = new FormData();
-    formData.append("file", file);
+      const formData = new FormData();
+      formData.append("file", file);
 
-    const response = await fetch('/upload/', {
-      method: 'POST',
-      body: formData
-    });
-
-    const result = await response.json();
-    document.getElementById("upRes").innerText = JSON.stringify(result, null, 2);
-  }
-
-  async function ask(){
-    let query = document.getElementById("qInput").value.trim();
-    if (!query) {
-      document.getElementById("docsRes").innerText = "⚠️ Please enter a query.";
-      document.getElementById("themeRes").innerText = "";
-      return;
-    }
-
-    // Step 1: Call /query/
-    let response = await fetch(`/query/?query=${encodeURIComponent(query)}`);
-    let json = await response.json();
-    document.getElementById("docsRes").innerHTML = '';
-
-    if (json.results && json.results.length > 0) {
-      json.results.forEach(result => {
-        const div = document.createElement("div");
-         div.innerHTML = result.replace(/\n/g, "<br>").replace(/●/g, "•");
-         document.getElementById("docsRes").appendChild(div);
-
-        // 👇 Fix for showing full content if result is object
-        if (typeof result === "string") {
-          div.innerText = result;
-        } else {
-          div.innerText = JSON.stringify(result, null, 2);
-        }
-
-        document.getElementById("docsRes").appendChild(div);
-      });
-
-      // Step 2: Combine results for theme identification
-      const combinedText = json.results.map(r =>
-        typeof r === "string" ? r : JSON.stringify(r)
-      ).join(" ");
-
-      let themeResponse = await fetch('/identify-theme', {
+      const response = await fetch('/upload/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: combinedText })
+        body: formData
       });
 
-      let themeJson = await themeResponse.json();
-
-      //  Fix for handling undefined theme
-      document.getElementById("themeRes").innerText = themeJson.theme
-        ? "Theme: " + themeJson.theme
-        : " Theme could not be identified.";
-    } else {
-      document.getElementById("docsRes").innerText = "No relevant documents found.";
-      document.getElementById("themeRes").innerText = "";
+      const result = await response.json();
+      document.getElementById("upRes").innerText = JSON.stringify(result, null, 2);
     }
-  }
-</script>
+
+    async function ask(){
+      let query = document.getElementById("qInput").value.trim();
+      if (!query) {
+        document.getElementById("docsRes").innerText = "⚠️ Please enter a query.";
+        document.getElementById("themeRes").innerText = "";
+        return;
+      }
+
+      // Step 1: Call /query/
+      let response = await fetch(`/query/?query=${encodeURIComponent(query)}`);
+      let json = await response.json();
+      document.getElementById("docsRes").innerHTML = '';
+
+      if (json.results && json.results.length > 0) {
+        json.results.forEach(result => {
+          const div = document.createElement("div");
+
+          // Handle string result
+          if (typeof result === "string") {
+            div.innerHTML = result.replace(/\n/g, "<br>").replace(/●/g, "•");
+          }
+          // Handle object result
+          else if (typeof result === "object" && result.content) {
+            div.innerHTML = `<strong>Source:</strong> ${result.source}<br><strong>Content:</strong><br>` +
+              result.content.replace(/\n/g, "<br>").replace(/●/g, "•");
+          }
+          // Fallback for unknown structure
+          else {
+            div.innerText = JSON.stringify(result, null, 2);
+          }
+
+          document.getElementById("docsRes").appendChild(div);
+        });
+
+        // Step 2: Combine results for theme identification
+        const combinedText = json.results.map(r =>
+          typeof r === "string" ? r : (r.content || JSON.stringify(r))
+        ).join(" ");
+
+        let themeResponse = await fetch('/identify-theme', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: combinedText })
+        });
+
+        let themeJson = await themeResponse.json();
+        document.getElementById("themeRes").innerText = themeJson.theme
+          ? "Theme: " + themeJson.theme
+          : "Theme could not be identified.";
+      } else {
+        document.getElementById("docsRes").innerText = "No relevant documents found.";
+        document.getElementById("themeRes").innerText = "";
+      }
+    }
+  </script>
 </body>
 </html>
-
-
-
