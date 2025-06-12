@@ -1,5 +1,5 @@
 from fastapi import APIRouter, File, UploadFile
-from backend.app.services.document_service import save_document, extract_text_from_document
+from app.services.document_service  import save_document, extract_text_from_document
 import os
 
 router = APIRouter()
