@@ -36,7 +36,7 @@
 
   <!-- Script -->
   <script>
-    async function upload(){
+    async function upload() {
       let file = document.getElementById("fileInput").files[0];
       if (!file) {
         document.getElementById("upRes").innerText = "⚠️ Please select a file first.";
@@ -55,7 +55,7 @@
       document.getElementById("upRes").innerText = JSON.stringify(result, null, 2);
     }
 
-    async function ask(){
+    async function ask() {
       let query = document.getElementById("qInput").value.trim();
       if (!query) {
         document.getElementById("docsRes").innerText = "⚠️ Please enter a query.";
@@ -72,28 +72,19 @@
         json.results.forEach(result => {
           const div = document.createElement("div");
 
-          // Handle string result
-          if (typeof result === "string") {
-            div.innerHTML = result.replace(/\n/g, "<br>").replace(/●/g, "•");
-          }
-          // Handle object result
-          else if (typeof result === "object" && result.content) {
-            div.innerHTML = `<strong>Source:</strong> ${result.source}<br><strong>Content:</strong><br>` +
-              result.content.replace(/\n/g, "<br>").replace(/●/g, "•");
-          }
-          // Fallback for unknown structure
-          else {
-            div.innerText = JSON.stringify(result, null, 2);
-          }
+          // Convert result to string if it's an object
+          let resultText = typeof result === "string"
+            ? result
+            : JSON.stringify(result, null, 2);
 
+          div.innerHTML = resultText.replace(/\n/g, "<br>").replace(/●/g, "•");
           document.getElementById("docsRes").appendChild(div);
         });
 
         // Step 2: Combine results for theme identification
-      const combinedText = json.results.map(r =>
-  typeof r === "string" ? r : (r.snippet || JSON.stringify(r))
-).join(" ");
-
+        const combinedText = json.results.map(r =>
+          typeof r === "string" ? r : JSON.stringify(r)
+        ).join(" ");
 
         let themeResponse = await fetch('/identify-theme', {
           method: 'POST',
@@ -102,9 +93,12 @@
         });
 
         let themeJson = await themeResponse.json();
-        document.getElementById("themeRes").innerText = themeJson.theme
-          ? "Theme: " + themeJson.theme
+
+        // ✅ FIX: Use "themes" instead of "theme"
+        document.getElementById("themeRes").innerText = themeJson.themes && themeJson.themes.length > 0
+          ? "Themes: " + themeJson.themes.join(", ")
           : "Theme could not be identified.";
+
       } else {
         document.getElementById("docsRes").innerText = "No relevant documents found.";
         document.getElementById("themeRes").innerText = "";
