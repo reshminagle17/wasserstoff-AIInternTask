@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.requests import Request
 
-from backend.app.api import upload, theme_identification, query
+from app.api import upload, theme_identification, query
 
 app = FastAPI(
     title="Document Research & Theme Identification Chatbot",
