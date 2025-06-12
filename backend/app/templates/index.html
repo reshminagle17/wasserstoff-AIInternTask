@@ -90,9 +90,10 @@
         });
 
         // Step 2: Combine results for theme identification
-        const combinedText = json.results.map(r =>
-          typeof r === "string" ? r : (r.content || JSON.stringify(r))
-        ).join(" ");
+      const combinedText = json.results.map(r =>
+  typeof r === "string" ? r : (r.snippet || JSON.stringify(r))
+).join(" ");
+
 
         let themeResponse = await fetch('/identify-theme', {
           method: 'POST',
